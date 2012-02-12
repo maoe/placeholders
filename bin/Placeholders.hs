@@ -6,8 +6,8 @@ import Data.List (delete)
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import System.IO (IOMode(..), hPutStrLn, hPrint, stderr, withFile)
-import Text.Parsec (getPosition, try, parse)
-import Text.Parsec.Char (upper, lower, alphaNum, oneOf)
+import Text.Parsec (getPosition, try, parse, skipMany, satisfy)
+import Text.Parsec.Char (char, upper, lower, alphaNum, oneOf)
 import Text.Parsec.Combinator (choice, optional , sepEndBy, notFollowedBy, manyTill)
 import Text.Parsec.Language (haskellDef)
 import Text.Parsec.Pos (SourcePos, sourceName, sourceLine)
@@ -39,10 +39,16 @@ importModule mod pos out = withFile out AppendMode $ \h -> do
 module' :: Parser ()
 module' = do
     whiteSpace
+    many cpphs
     reserved "module"
     void modid
     optional exports
     reserved "where"
+
+cpphs :: Parser ()
+cpphs = lexeme $ do
+    char '#'
+    skipMany $ satisfy (/= '\n')
 
 exports :: Parser ()
 exports = void . parens $ export' `sepEndBy` comma
