@@ -33,4 +33,13 @@ Library
                        template-haskell
   
   Hs-source-dirs:      src
-  
+
+Flag preprocessor
+  Default:             False
+
+Executable placeholders
+  if flag(preprocessor)
+    Buildable:         True
+  Main-is:             bin/Placeholders.hs
+  Build-depends:       base >= 4 && < 5,
+                       parsec >= 3 && < 4
