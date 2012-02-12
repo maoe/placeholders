@@ -26,7 +26,7 @@ getFirstImportPosition :: Parser SourcePos
 getFirstImportPosition = optional module' >> getPosition
 
 importModule :: String -> SourcePos -> FilePath -> IO ()
-importModule mod pos out = withFile out AppendMode $ \h -> do
+importModule mod pos out = withFile out WriteMode $ \h -> do
     con <- readFile (sourceName pos)
     forM_ (zip [1..] (lines con)) $ \(lineNo, line) -> do
         when (lineNo == sourceLine pos) $
