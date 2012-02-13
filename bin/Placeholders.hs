@@ -16,22 +16,25 @@ import qualified Text.Parsec.Token as P
 
 main :: IO ()
 main = do
-    (_orig:inp:out:_) <- getArgs
+    (orig:inp:out:_) <- getArgs
     src <- readFile inp
     case parse getFirstImportPosition inp src of
         Left err  -> hPrint stderr err >> exitFailure
-        Right pos -> importModule "Development.Placeholders" pos out
+        Right pos -> importModule "Development.Placeholders" pos orig out
 
 getFirstImportPosition :: Parser SourcePos
 getFirstImportPosition = optional module' >> getPosition
 
-importModule :: String -> SourcePos -> FilePath -> IO ()
-importModule mod pos out = withFile out WriteMode $ \h -> do
+importModule :: String -> SourcePos -> FilePath -> FilePath -> IO ()
+importModule mod pos orig out = withFile out WriteMode $ \h -> do
     con <- readFile (sourceName pos)
     forM_ (zip [1..] (lines con)) $ \(lineNo, line) -> do
-        when (lineNo == sourceLine pos) $
-             hPutStrLn h $ "import " ++ mod
+        when (lineNo == sourceLine pos) $ do
+            hPutStrLn h $ "import " ++ mod
         hPutStrLn h line
+        hPutStrLn h $ linePragma lineNo
+    where
+        linePragma n = "{-# LINE " ++ show n ++ " \"" ++ orig ++ "\" #-}"
 
 ----------------------------------------------------------
 -- Module header parser from Haskell 2010 Report
